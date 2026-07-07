@@ -1,0 +1,1 @@
+export { setupVueEntry } from './setupVueEntry';

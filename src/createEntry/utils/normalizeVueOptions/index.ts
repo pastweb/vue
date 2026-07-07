@@ -1,0 +1,1 @@
+export { normalizeVueOptions } from './normalizeVueOptions';
