@@ -31,7 +31,8 @@ The documentation is organized into the following major categories. Each section
 - **API functions** - Query cache installer and Vue wrappers around tools API hooks.
 - **Async functions** - Pinia async store helpers and color-scheme composable factory.
 - **Routing** - Vue integration for `createViewRouter`.
-- **Element functions** - Entry rendering, islands, portals, slots, and UI composition helpers.
+- **Browser functions** - Browser-aware composables such as device matching.
+- **Element functions** - Async rendering, entry rendering, islands, portals, slots, and UI composition helpers.
 - **Hook functions** - Vue lifecycle and mediator composables.
 - **Utility functions** - Small Vue utilities such as `Render`, `computed`, `useRef`, `getEventHandlers`, `withDefaultProps`, and `withDefaultPropsHandlers`.
 
@@ -53,6 +54,8 @@ This project is distributed under the MIT licence.
   - [useInfiniteQuery](#useinfinitequery)
 - [Async functions](#async-functions)
   - [createPiniaAsyncStore](#createpiniaasyncstore)
+  - [createMicroStore](#createmicrostore)
+  - [reuseMicroStore](#reusemicrostore)
   - [useColorScheme](#usecolorscheme)
 - [Routing](#routing)
   - [createRouter](#createrouter)
@@ -65,7 +68,11 @@ This project is distributed under the MIT licence.
   - [useRouter](#userouter)
   - [useRouterLink](#userouterlink)
   - [useSearchParams](#usesearchparams)
+- [Browser functions](#browser-functions)
+  - [useMatchDevice](#usematchdevice)
+  - [reuseMatchDevice](#reusematchdevice)
 - [Element functions](#element-functions)
+  - [AsyncComponent](#asynccomponent)
   - [createEntry](#createentry)
   - [createServerEntry](#createserverentry)
   - [EntryAdapter](#entryadapter)
@@ -348,6 +355,12 @@ const posts = useInfiniteQuery({
 
 ### `createPiniaAsyncStore`
 
+Pinia is optional in `@pastweb/vue`. Install it before using this helper:
+
+```bash
+npm i -S pinia
+```
+
 Creates a Pinia-flavored async store wrapper around tools async store primitives. The returned async store includes a Pinia instance on `store`; calling `init()` runs `onInit(pinia)` and marks the store as ready once initialization completes.
 
 Use it when a store needs to initialize asynchronously before the application starts reading from it.
@@ -389,6 +402,112 @@ await piniaStore.init();
 await piniaStore.isReady;
 ```
 
+### `createMicroStore`
+
+`createMicroStore` takes the same parameters as `createMicroStore` from `@pastweb/tools`, creates the tools store, and returns a Vue-ready composable. The returned composable keeps the same readonly state/actions shape and updates Vue rendering after actions update selected state.
+
+> #### Syntax
+
+```ts
+function createMicroStore<S, A>(
+  name: string,
+  setup: (select: <T>(fn: Selector<T, S>) => T) => MicroStoreConfig<S, A>,
+): VueUseMicroStore<S, A>
+```
+
+Parameters
+
+* `name`: `string`
+  * Unique store name passed to the tools micro-store registry.
+* `setup`: `(select: <T>(fn: Selector<T, S>) => T) => MicroStoreConfig<S, A>`
+  * Tools micro-store setup function that returns initial state and actions.
+
+Returns
+
+* `VueUseMicroStore<S, A>`
+  * Vue composable for reading the full store or a selected state value.
+
+**Example:**
+```vue
+<script setup lang="ts">
+import { createMicroStore } from '@pastweb/vue';
+
+const useCounterStore = createMicroStore('counter', () => ({
+  state: { count: 0 },
+  actions: {
+    increment() {
+      this.state.count += 1;
+    },
+  },
+}));
+
+const { state, increment } = useCounterStore(state => state.count);
+</script>
+
+<template>
+  <button @click="increment">
+    {{ state.count }}
+  </button>
+</template>
+```
+
+### `reuseMicroStore`
+
+`reuseMicroStore` bridges a tools micro-store that was created elsewhere into Vue rendering. Use it when the store belongs to the framework-agnostic layer, but a Vue component needs to read it and update when selected tools reactive state changes.
+
+> #### Syntax
+
+```ts
+function reuseMicroStore<S, A, T = S>(
+  store: UseMicroStore<S, A>,
+  selector?: VueMicroStoreSelector<T, S>,
+): ReuseMicroStoreResult<S, A, T>
+```
+
+Parameters
+
+* `store`: `UseMicroStore<S, A>`
+  * Store returned by `createMicroStore` from `@pastweb/tools`.
+* `selector`: `VueMicroStoreSelector<T, S>` _(optional)_
+  * Optional selector passed to the tools store.
+
+Returns
+
+* `ReuseMicroStoreResult<S, A, T>`
+  * Full or selected readonly state plus the original actions.
+
+**Example:**
+```vue
+<script setup lang="ts">
+import { createMicroStore } from '@pastweb/tools';
+import { reuseMicroStore } from '@pastweb/vue';
+
+const settingsStore = createMicroStore('settings', () => ({
+  state: {
+    user: {
+      name: 'Ada',
+      preferences: {
+        theme: 'light',
+      },
+    },
+  },
+  actions: {
+    useDarkTheme() {
+      this.state.user.preferences.theme = 'dark';
+    },
+  },
+}));
+
+const user = reuseMicroStore(settingsStore, state => state.user);
+</script>
+
+<template>
+  <button @click="user.useDarkTheme">
+    {{ user.state.name }}: {{ user.state.preferences.theme }}
+  </button>
+</template>
+```
+
 ### `useColorScheme`
 
 Vue composable for color-scheme state from `@pastweb/tools`. Pass options to create an internal `MatchScheme`, or pass a pre-created `MatchScheme` as the second argument.
@@ -425,7 +544,7 @@ function createRouter(router: ViewRouter): Plugin;
 
 **Example:**
 ```ts
-import { createViewRouter, type Route } from '@pastweb/tools/createViewRouter';
+import { createViewRouter, type Route } from '@pastweb/tools';
 import { createRouter, RouterView } from '@pastweb/vue';
 
 const router = createViewRouter({
@@ -658,7 +777,144 @@ function setView(value: string) {
 ```
 
 ---
+## Browser functions
+
+### `useMatchDevice`
+
+`useMatchDevice` tracks device matches with the tools `createMatchDevice` helper. The returned `devices` object is reactive and stable, so it can be destructured in setup code and used directly in templates.
+
+> #### Syntax
+
+```ts
+function useMatchDevice(config: DevicesConfig): DevicesResult
+```
+
+**Example:**
+```vue
+<script setup lang="ts">
+import { useMatchDevice, useMounted } from '@pastweb/vue';
+
+const config = {
+  phone: { mediaQuery: '(max-width: 320px)' },
+  tablet: { mediaQuery: '(max-width: 600px)' },
+  desktop: { mediaQuery: '(max-width: 1024px)' },
+};
+
+const { devices, onMatch } = useMatchDevice(config);
+
+useMounted(() => {
+  onMatch('phone', (matches, device) => {
+    console.log(`${device}: ${matches}`);
+  });
+});
+</script>
+
+<template>
+  <MobileNav v-if="devices.phone" />
+  <DesktopNav v-else />
+</template>
+```
+
+---
+### `reuseMatchDevice`
+
+`reuseMatchDevice` bridges a reactive device state created by the tools `useMatchDevice` helper into Vue rendering. Use it when device state belongs to a framework-agnostic module, but a Vue component needs to render from it.
+
+> #### Syntax
+
+```ts
+function reuseMatchDevice(matchDevice: DevicesResult): DevicesResult
+```
+
+**Example:**
+```vue
+<script setup lang="ts">
+import { useMatchDevice as createToolsMatchDevice } from '@pastweb/tools';
+import { reuseMatchDevice } from '@pastweb/vue';
+
+const deviceState = createToolsMatchDevice({
+  phone: { mediaQuery: '(max-width: 640px)' },
+});
+
+const { devices } = reuseMatchDevice(deviceState);
+</script>
+
+<template>
+  <MobileNav v-if="devices.phone" />
+  <DesktopNav v-else />
+</template>
+```
+
+---
 ## Element functions
+
+### `AsyncComponent`
+
+`AsyncComponent` loads a Vue component with `import()` and renders it after optional dependencies have completed. On the client it can show a fallback while loading. On the server it registers the component load in the SSR async task queue, then renders the loaded component on the next render pass.
+
+Use dependencies for code-split modules that must be initialized before the component is displayed, such as a store module, reducer-like registry, or feature service.
+
+> #### Syntax
+
+```ts
+interface DependencyInfo {
+  exportName?: string;
+  dependency: Promise<any> | (() => Promise<any>);
+  onSuccess?: (dependency: any) => void;
+  onError?: (error: any) => void;
+}
+
+type Dependency = Promise<any> | (() => Promise<any>) | DependencyInfo;
+
+interface AsyncComponentProps {
+  component: () => Promise<{ default: Component }>;
+  dependencies?: Dependency[];
+  fallback?: Content | null;
+}
+```
+
+**Basic example:**
+```vue
+<script setup lang="ts">
+import { AsyncComponent } from '@pastweb/vue';
+import LoadingPanel from './LoadingPanel.vue';
+</script>
+
+<template>
+  <AsyncComponent
+    :component="() => import('./ProfilePanel.vue')"
+    :fallback="LoadingPanel"
+    user-id="42"
+  />
+</template>
+```
+
+**Dependency example:**
+```vue
+<script setup lang="ts">
+import { AsyncComponent } from '@pastweb/vue';
+import { registerFeatureStore } from '@/stores/features';
+import LoadingPanel from './LoadingPanel.vue';
+import type { DependencyInfo } from '@pastweb/vue';
+
+const dependencies: DependencyInfo[] = [{
+  dependency: () => import('@/stores/profileStore'),
+  exportName: 'profileStore',
+  onSuccess: store => {
+    registerFeatureStore('profile', store);
+  },
+}];
+</script>
+
+<template>
+  <AsyncComponent
+    :component="() => import('./ProfilePanel.vue')"
+    :dependencies="dependencies"
+    :fallback="LoadingPanel"
+    user-id="42"
+  />
+</template>
+```
 
 ### `createEntry`
 
@@ -806,7 +1062,7 @@ function usePortals<T>(): T;
 ```vue
 <script setup lang="ts">
 import { usePortals } from '@pastweb/vue';
-import type { Portal } from '@pastweb/tools/portals';
+import type { Portal } from '@pastweb/tools';
 
 type AppPortals = {
   modal: Portal;

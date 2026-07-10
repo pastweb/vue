@@ -33,6 +33,14 @@ export type {
   UseQueriesInput,
 } from './api';
 
+export { AsyncComponent } from './AsyncComponent';
+export type {
+  AsyncComponentProps,
+  ComponentModule,
+  Dependency,
+  DependencyInfo,
+} from './AsyncComponent';
+
 export { createEntry, createServerEntry } from './createEntry';
 export type {
   Component,
@@ -44,6 +52,20 @@ export type {
 } from './createEntry';
 
 export { useColorScheme } from './useColorScheme';
+
+export { createMicroStore, reuseMicroStore } from './createMicroStore';
+export type {
+  MicroStore,
+  MicroStoreActions,
+  MicroStoreActionsContext,
+  MicroStoreConfig,
+  ReuseMicroStoreResult,
+  Selector,
+  UseMicroStore,
+  VueMicroStore,
+  VueMicroStoreSelector,
+  VueUseMicroStore,
+} from './createMicroStore';
 
 export { EntryAdapter } from './EntryAdapter';
 
@@ -93,6 +115,9 @@ export { useChildren } from './useChildren';
 
 export { useMediator } from './useMediator';
 export type { ContextUtils, Mediator, MediatorFunction } from './useMediator';
+
+export { reuseMatchDevice, useMatchDevice } from './useMatchDevice';
+export type { DevicesConfig, DevicesResult } from './useMatchDevice';
 
 export { useMounted } from './useMounted';
 export { useRef } from './useRef';

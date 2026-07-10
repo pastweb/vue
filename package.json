@@ -1,6 +1,6 @@
 {
   "name": "@pastweb/vue",
-  "version": "2.0.0",
+  "version": "2.2.0",
   "description": "Vue bindings for Pastweb: composables and components for routing, portals, API query hooks, SSR entries, islands, Pinia stores, and reactive state.",
   "keywords": [
     "api-query",
@@ -168,6 +168,30 @@
       "import": "./dist/api/types.js",
       "require": "./dist/api/types.cjs"
     },
+    "./AsyncComponent": {
+      "import": "./dist/AsyncComponent/index.js",
+      "require": "./dist/AsyncComponent/index.cjs"
+    },
+    "./AsyncComponent/AsyncComponent": {
+      "import": "./dist/AsyncComponent/AsyncComponent.js",
+      "require": "./dist/AsyncComponent/AsyncComponent.cjs"
+    },
+    "./AsyncComponent/AsyncComponent.vue_vue_type_script_lang": {
+      "import": "./dist/AsyncComponent/AsyncComponent.vue_vue_type_script_lang.js",
+      "require": "./dist/AsyncComponent/AsyncComponent.vue_vue_type_script_lang.cjs"
+    },
+    "./AsyncComponent/constants": {
+      "import": "./dist/AsyncComponent/constants.js",
+      "require": "./dist/AsyncComponent/constants.cjs"
+    },
+    "./AsyncComponent/types": {
+      "import": "./dist/AsyncComponent/types.js",
+      "require": "./dist/AsyncComponent/types.cjs"
+    },
+    "./AsyncComponent/utils": {
+      "import": "./dist/AsyncComponent/utils.js",
+      "require": "./dist/AsyncComponent/utils.cjs"
+    },
     "./computed": {
       "import": "./dist/computed/index.js",
       "require": "./dist/computed/index.cjs"
@@ -267,6 +291,34 @@
     "./createEntry/WaitFor/WaitFor.vue_vue_type_script_setup_true_lang": {
       "import": "./dist/createEntry/WaitFor/WaitFor.vue_vue_type_script_setup_true_lang.js",
       "require": "./dist/createEntry/WaitFor/WaitFor.vue_vue_type_script_setup_true_lang.cjs"
+    },
+    "./createMicroStore": {
+      "import": "./dist/createMicroStore/index.js",
+      "require": "./dist/createMicroStore/index.cjs"
+    },
+    "./createMicroStore/createMicroStore": {
+      "import": "./dist/createMicroStore/createMicroStore.js",
+      "require": "./dist/createMicroStore/createMicroStore.cjs"
+    },
+    "./createMicroStore/reuseMicroStore": {
+      "import": "./dist/createMicroStore/reuseMicroStore/index.js",
+      "require": "./dist/createMicroStore/reuseMicroStore/index.cjs"
+    },
+    "./createMicroStore/reuseMicroStore/reuseMicroStore": {
+      "import": "./dist/createMicroStore/reuseMicroStore/reuseMicroStore.js",
+      "require": "./dist/createMicroStore/reuseMicroStore/reuseMicroStore.cjs"
+    },
+    "./createMicroStore/reuseMicroStore/types": {
+      "import": "./dist/createMicroStore/reuseMicroStore/types.js",
+      "require": "./dist/createMicroStore/reuseMicroStore/types.cjs"
+    },
+    "./createMicroStore/reuseMicroStore/utils": {
+      "import": "./dist/createMicroStore/reuseMicroStore/utils.js",
+      "require": "./dist/createMicroStore/reuseMicroStore/utils.cjs"
+    },
+    "./createMicroStore/types": {
+      "import": "./dist/createMicroStore/types.js",
+      "require": "./dist/createMicroStore/types.cjs"
     },
     "./createPiniaAsyncStore": {
       "import": "./dist/createPiniaAsyncStore/index.js",
@@ -567,6 +619,22 @@
     "./useColorScheme/useColorScheme": {
       "import": "./dist/useColorScheme/useColorScheme.js",
       "require": "./dist/useColorScheme/useColorScheme.cjs"
+    },
+    "./useMatchDevice": {
+      "import": "./dist/useMatchDevice/index.js",
+      "require": "./dist/useMatchDevice/index.cjs"
+    },
+    "./useMatchDevice/reuseMatchDevice": {
+      "import": "./dist/useMatchDevice/reuseMatchDevice.js",
+      "require": "./dist/useMatchDevice/reuseMatchDevice.cjs"
+    },
+    "./useMatchDevice/types": {
+      "import": "./dist/useMatchDevice/types.js",
+      "require": "./dist/useMatchDevice/types.cjs"
+    },
+    "./useMatchDevice/useMatchDevice": {
+      "import": "./dist/useMatchDevice/useMatchDevice.js",
+      "require": "./dist/useMatchDevice/useMatchDevice.cjs"
     },
     "./useMediator": {
       "import": "./dist/useMediator/index.js",
