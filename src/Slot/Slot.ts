@@ -1,37 +1,33 @@
-import { defineComponent, isVNode, cloneVNode, type VNode } from 'vue';
+import { cloneVNode, defineComponent, getCurrentInstance } from 'vue';
 import type { SlotProps } from './types';
 
 /**
- * A flexible slot wrapper component that allows rendering a named or default slot
- * with optional transformations. It can apply additional props to the slot content
- * via cloning, or transform the content using a custom mapping function.
+ * A flexible VNode wrapper for transforming a component's named slot content.
+ * It resolves the named slot from its owning component first, then falls back
+ * to a slot declared on itself and finally its default content. `props` provide
+ * scoped values and, without `map`, clone attributes onto the rendered VNodes.
  *
  * @example
  * ```vue
- * <template>
- *   <Slot name="header" :props="{ class: 'bg-blue-500 text-white p-4' }">
- *     <template #header>
- *       <h1>My Custom Header</h1>
- *     </template>
- *   </Slot>
- *
- *   <!-- With a mapping function to wrap content in a div -->
- *   <Slot :map="(content) => h('div', { class: 'wrapper' }, content)">
- *     <template #default>
- *       <p>Default content wrapped in a div.</p>
- *     </template>
- *   </Slot>
- * </template>
- *
  * <script setup lang="ts">
  * import { h } from 'vue';
- * import SlotWrapper from './SlotWrapper.vue';
+ * import { Slot } from '@pastweb/vue';
  * </script>
- * ```
  *
- * In the example above:
- * - The first `Slot` renders the `header` slot and applies CSS classes via `props`.
- * - The second uses `map` to wrap the default slot content in a `div` with a class.
+ * <template>
+ *   <Slot name="header" :props="{ title: 'Settings', class: 'header' }">
+ *     <h1>Default header</h1>
+ *   </Slot>
+ *
+ *   <Slot
+ *     :map="(content, index) => h('div', { class: `wrapper wrapper-${index}` }, content)"
+ *   />
+ *
+ *   <!-- Used when the owning component does not provide #fallback. -->
+ *   <Slot name="fallback">
+ *     <template #fallback>Fallback content</template>
+ *   </Slot>
+ * ```
  */
 export default defineComponent<SlotProps>({
   props: {
@@ -43,12 +39,12 @@ export default defineComponent<SlotProps>({
      */
     name: {
       type: String,
-      required: false
+      default: 'default'
     },
     /**
-     * An object of additional props to merge into the slot's VNode(s) via cloning.
-     * If the slot content is an array of VNodes, each will be cloned individually.
-     * Ignored if `map` is provided.
+     * Values passed to a scoped slot. When `map` is omitted, they are also merged
+     * into the slot's VNode(s) via cloning. If the slot content is an array of
+     * VNodes, each will be cloned individually.
      * @type {Record<string, any>}
      * @example { class: 'bg-red-500', style: 'font-weight: bold' }
      */
@@ -58,10 +54,10 @@ export default defineComponent<SlotProps>({
     },
     /**
      * An optional mapping function to transform the slot content.
-     * Receives the slot content (single VNode or array) and must return a VNode or array.
-     * Takes precedence over `props`.
-     * @type {(content: VNode | VNode[]) => VNode | VNode[]}
-     * @example (content) => h('div', { class: 'container' }, content)
+     * Receives each slot VNode and its index, and must return a VNode or array.
+     * Replaces VNode cloning, while `props` remain available to a scoped slot.
+     * @type {(content: VNode, index: number) => VNode | VNode[]}
+     * @example (content, index) => h('div', { class: `container container-${index}` }, content)
      */
     map: {
       type: Function,
@@ -69,26 +65,23 @@ export default defineComponent<SlotProps>({
     }
   },
   setup(props, { slots }) {
+    const ownerSlots = getCurrentInstance()?.parent?.slots;
+
     const renderSlot = () => {
-      const targetSlotName = props.name || 'default';
-      const targetContent = slots[targetSlotName as string]?.() || [] as VNode[];
+      const targetSlotName = props.name ?? 'default';
+      const content = ownerSlots?.[targetSlotName]?.(props.props)
+        ?? slots[targetSlotName]?.(props.props)
+        ?? slots.default?.(props.props)
+        ?? [];
 
-      if (targetContent.length === 0) return slots.default?.() || null;
-
-      let content: VNode | VNode[] = targetContent.length === 1 ? targetContent[0] : targetContent;
+      if (content.length === 0) return null;
 
       if (props.map) {
-        const mapped = props.map(content);
-        // Normalize to array for consistency, but render accepts single VNode too
-        return Array.isArray(mapped) ? mapped : (mapped as VNode);
+        return content.flatMap((vnode, index) => props.map!(vnode, index));
       }
 
       if (props.props) {
-        if (isVNode(content)) {
-          return cloneVNode(content, props.props);
-        } else {
-          return (content as VNode[]).map((vnode) => cloneVNode(vnode, props.props));
-        }
+        return content.map((vnode) => cloneVNode(vnode, props.props));
       }
 
       return content;

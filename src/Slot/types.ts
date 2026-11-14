@@ -4,10 +4,13 @@ import type { VNode } from 'vue';
  * Props accepted by {@link import('./Slot').Slot}.
  */
 export interface SlotProps {
-  /** Slot name to render. Defaults to the default slot. */
+  /** Name of the owning component's slot to render. Defaults to the default slot. */
   name?: string;
-  /** Additional props or listeners cloned onto rendered slot VNodes. */
+  /**
+   * Scoped values passed to the selected slot. When `map` is omitted, these are
+   * also cloned onto rendered VNodes as props/listeners.
+   */
   props?: Record<string, any>;
-  /** Optional mapper that transforms the rendered slot content. */
-  map?: (content: any) => VNode | VNode[];
+  /** Optional mapper that transforms each rendered slot VNode with its index. */
+  map?: (content: VNode, index: number) => VNode | VNode[];
 };
