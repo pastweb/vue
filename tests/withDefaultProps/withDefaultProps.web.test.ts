@@ -66,21 +66,72 @@ describe('withDefaultProps', () => {
     expect(wrapper.text()).toBe('neutral:md');
   });
 
-  it('normalizes boolean string characters with the default option', () => {
+  it('does not normalize boolean string characters by default', () => {
     const enabled = withDefaultProps(
-      { enabled: '+' },
-      { enabled: '-' },
+      { enabled: 'true' },
+      { enabled: 'false' },
     );
     const disabled = withDefaultProps(
-      { enabled: '-' },
-      { enabled: '+' },
+      { enabled: 'false' },
+      { enabled: 'true' },
     );
 
     expect(enabled).toMatchObject({
-      enabled: true,
+      enabled: 'true',
     });
     expect(disabled).toMatchObject({
-      enabled: false,
+      enabled: 'false',
+    });
+  });
+
+  it('normalizes default keys with DEFAULT_BOOLEAN_CHARS when enabled', () => {
+    const props = withDefaultProps(
+      {
+        enabled: 'true',
+        externalValue: 'false',
+      },
+      { enabled: 'false' },
+      { booleanChars: true },
+    );
+
+    expect(props).toMatchObject({
+      enabled: true,
+      externalValue: 'false',
+    });
+  });
+
+  it('does not normalize boolean string characters when explicitly disabled', () => {
+    const props = withDefaultProps(
+      { enabled: 'true' },
+      { enabled: 'false' },
+      { booleanChars: false },
+    );
+
+    expect(props).toMatchObject({
+      enabled: 'true',
+    });
+  });
+
+  it('does not normalize boolean string characters when the option is undefined', () => {
+    const props = withDefaultProps(
+      { enabled: 'true' },
+      { enabled: 'false' },
+      { booleanChars: undefined },
+    );
+
+    expect(props).toMatchObject({
+      enabled: 'true',
+    });
+  });
+
+  it('keeps plus and minus strings unless they are configured as boolean characters', () => {
+    const props = withDefaultProps(
+      { expanded: '+' },
+      { expanded: '-' },
+    );
+
+    expect(props).toMatchObject({
+      expanded: '+',
     });
   });
 
@@ -96,20 +147,19 @@ describe('withDefaultProps', () => {
     });
   });
 
-  it('maps className defaults to Vue class by default', () => {
+  it('maps Vue class props to className defaults by default', () => {
     const props = withDefaultProps(
-      {},
+      { class: 'custom-panel' },
       { className: 'panel', role: 'region' },
     );
 
     expect(props).toMatchObject({
-      class: 'panel',
+      className: 'custom-panel',
       role: 'region',
     });
-    expect(Object.hasOwn(props as Record<string, any>, 'className')).toBe(false);
   });
 
-  it('can keep className when className mapping is disabled', () => {
+  it('keeps the className default when class mapping is disabled', () => {
     const props = withDefaultProps(
       {},
       { className: 'panel' },

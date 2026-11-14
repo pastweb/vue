@@ -1,6 +1,6 @@
 import { shallowReactive, watchEffect } from 'vue';
 import { update } from '@pastweb/tools/update';
-import { OPTIONS } from './constants';
+import { DEFAULT_BOOLEAN_CHARS, OPTIONS } from './constants';
 import type { WithDefaultPropsOptions } from './types';
 
 /**
@@ -13,12 +13,14 @@ import type { WithDefaultPropsOptions } from './types';
  * Vue coerces absent Boolean props to `false` at runtime, which makes it
  * impossible for this helper to distinguish "not provided" from "explicitly
  * false" when a prop is declared as Boolean. The `booleanChars` option exists
- * for that case: expose the prop as a string union such as `'+' | '-'`, then let
+ * for that case: expose the prop as a string union such as `'true' | 'false'`, then let
  * this helper normalize those characters back to booleans after defaults are
- * applied. By default, `+` becomes `true` and `-` becomes `false`.
+ * applied. Normalization applies only to keys declared in `defaults`. It is
+ * disabled by default; set `booleanChars` to `true` to use
+ * `DEFAULT_BOOLEAN_CHARS`, or provide a marker tuple.
  *
- * A default key named `className` is also exposed as Vue's `class` prop by
- * default.
+ * A public Vue `class` prop is normalized to a default key named `className`
+ * by default.
  *
  * @typeParam T - Resulting props type.
  * @param props - Source Vue props object.
@@ -29,8 +31,8 @@ import type { WithDefaultPropsOptions } from './types';
  * @example
  * ```ts
  * const props = withDefaultProps(
- *   defineProps<{ tone?: string; block?: '+' | '-' }>(),
- *   { tone: 'neutral', block: '-' },
+ *   defineProps<{ tone?: string; block?: 'true' | 'false' }>(),
+ *   { tone: 'neutral', block: 'false' },
  * );
  * ```
  *
@@ -46,7 +48,9 @@ import type { WithDefaultPropsOptions } from './types';
  */
 export function withDefaultProps<T>(props: Record<string, any>, defaults: Record<string, any>, options?: WithDefaultPropsOptions): T {
   const opts = { ...OPTIONS, ...options };
-  const { booleanChars: [trueChar, falseChar] } = opts;
+  const booleanChars = options?.booleanChars === true
+    ? DEFAULT_BOOLEAN_CHARS
+    : options?.booleanChars ?? OPTIONS.booleanChars;
   const excludes = Array.isArray(opts.exclude) ? opts.exclude : [opts.exclude];
   const newProps = shallowReactive<Record<string, any>>({});
 
@@ -71,22 +75,25 @@ export function withDefaultProps<T>(props: Record<string, any>, defaults: Record
       if (shouldExclude(key)) {
         // Still copy the original prop if it exists, but don't apply default
         if (props[key] !== undefined) {
-          merged[opts.className && key === 'className' ? 'class' : key] = props[key];
+          merged[key] = props[key];
         }
         return;
       }
 
-      const value = props[key] !== undefined ? props[key] : defValue;
+      const value = opts.className && key === 'className'
+        ? (props.class !== undefined ? props.class : props[key] !== undefined ? props[key] : defValue)
+        : props[key] !== undefined ? props[key] : defValue;
 
-      // Boolean char normalization
-      if (typeof value === 'string' && (value === trueChar || value === falseChar)) {
-        merged[key] = value === trueChar ? true : value === falseChar ? false : defValue;
+      if (
+        booleanChars !== false
+        && typeof value === 'string'
+        && (value === booleanChars[0] || value === booleanChars[1])
+      ) {
+        merged[key] = value === booleanChars[0];
         return;
       }
 
-      // className special handling
-      const targetKey = opts.className && key === 'className' ? 'class' : key;
-      merged[targetKey] = value;
+      merged[key] = value;
     });
 
     update(newProps, merged);
