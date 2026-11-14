@@ -41,6 +41,9 @@ export type {
   DependencyInfo,
 } from './AsyncComponent';
 
+export { Remote } from './Remote';
+export type { RemoteDependency, RemoteModule, RemoteProps } from './Remote';
+
 export { createEntry, createServerEntry } from './createEntry';
 export type {
   Component,
@@ -51,7 +54,7 @@ export type {
   Register,
 } from './createEntry';
 
-export { useColorScheme } from './useColorScheme';
+export { reuseColorScheme, useColorScheme } from './useColorScheme';
 
 export { createMicroStore, reuseMicroStore } from './createMicroStore';
 export type {
@@ -59,6 +62,7 @@ export type {
   MicroStoreActions,
   MicroStoreActionsContext,
   MicroStoreConfig,
+  ReuseMicroStoreHook,
   ReuseMicroStoreResult,
   Selector,
   UseMicroStore,
@@ -70,7 +74,8 @@ export type {
 export { EntryAdapter } from './EntryAdapter';
 
 export { getContext } from './getContext';
-export { getEventHandlers, type GetEventHandlersOptions } from './getEventHandlers';
+
+export { invokeEventHandlers } from './invokeEventHandlers';
 
 export { Island, useIsland } from './Island';
 export type { ClientStrategy, IslandDefaultProps, IslandProps } from './Island';
@@ -87,8 +92,9 @@ export type { PortalFunction, PortalProps, EntryDescriptor } from './portals';
 export { Render, type Content, type RenderProps } from './Render';
 
 export {
+  RouterLink,
   RouterView,
-  createRouter,
+  installRouter,
   useLocation,
   useNavigate,
   useRoute,
@@ -107,6 +113,9 @@ export type {
 
 export { setContext } from './setContext';
 
+export { installWindowManager, useWindowManager } from './windowManager';
+export type { WindowManagerOptions } from './windowManager';
+
 export { Slot, type SlotProps } from './Slot';
 
 export { useBeforeMount } from './useBeforeMount';
@@ -123,4 +132,3 @@ export { useMounted } from './useMounted';
 export { useRef } from './useRef';
 
 export { withDefaultProps, type WithDefaultPropsOptions } from './withDefaultProps';
-export { withDefaultPropsHandlers, type WithDefaultPropsHandlersOptions } from './withDefaultPropsHandlers';
