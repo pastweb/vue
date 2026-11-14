@@ -33,9 +33,10 @@ describe('createMicroStore', () => {
         },
       },
     }));
+    const useCounterStore = reuseMicroStore(counterStore);
     const Counter = defineComponent({
       setup() {
-        const counter = reuseMicroStore(counterStore);
+        const counter = useCounterStore();
 
         return () => h('button', { onClick: counter.increment }, counter.state.count);
       },
@@ -101,9 +102,10 @@ describe('createMicroStore', () => {
         },
       },
     }));
+    const useSettingsStore = reuseMicroStore(settingsStore);
     const Accent = defineComponent({
       setup() {
-        const settings = reuseMicroStore(settingsStore);
+        const settings = useSettingsStore();
 
         return () => h(
           'button',

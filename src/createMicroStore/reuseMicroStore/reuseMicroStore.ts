@@ -3,30 +3,27 @@ import { effect } from '@pastweb/tools/reactivity';
 import { createRenderableState, getStoreSnapshot } from './utils';
 import type {
   MicroStoreActions,
+  ReuseMicroStoreHook,
   ReuseMicroStoreResult,
   VueMicroStore,
   VueMicroStoreSelector,
 } from './types';
 
 /**
- * Reuses a tools `useMicroStore` function inside Vue rendering.
+ * Bridges a tools `useMicroStore` into Vue and returns a Vue composable for it.
  *
- * `createMicroStore` from `@pastweb/tools` returns a framework-agnostic
- * `useMicroStore` function. `reuseMicroStore` receives that function, calls it
- * with the optional selector, and mirrors the selected readonly state into a
- * Vue-renderable object so templates update after store actions mutate tools
- * reactive state.
+ * Define the bridge next to the tools store, export the composable, and call it
+ * inside `setup` (optionally with a selector) so templates update when selected
+ * tools reactive state changes.
  *
  * @typeParam S - Micro-store state shape.
  * @typeParam A - Micro-store action shape.
- * @typeParam T - Selected state value when a selector is provided.
- * @param store - `useMicroStore` function returned by `createMicroStore` from `@pastweb/tools`.
- * @param selector - Optional selector passed to the tools `useMicroStore`.
- * @returns Full or selected micro-store state plus the original actions.
+ * @param store - `useMicroStore` from `createMicroStore` in `@pastweb/tools`.
+ * @returns A Vue composable: `useStore()` or `useStore(selector)`.
  *
  * @example
- * ```vue
- * <script setup lang="ts">
+ * ```ts
+ * // @/stores/settingsStore.ts
  * import { createMicroStore } from '@pastweb/tools';
  * import { reuseMicroStore } from '@pastweb/vue';
  *
@@ -41,7 +38,16 @@ import type {
  *   },
  * }));
  *
- * const settings = reuseMicroStore(settingsStore);
+ * export const useSettingsStore = reuseMicroStore(settingsStore);
+ * ```
+ *
+ * @example
+ * ```vue
+ * <!-- SettingsButton.vue -->
+ * <script setup lang="ts">
+ * import { useSettingsStore } from '@/stores/settingsStore';
+ *
+ * const settings = useSettingsStore();
  * </script>
  *
  * <template>
@@ -54,27 +60,33 @@ import type {
 export function reuseMicroStore<
   S extends Record<string, any>,
   A extends MicroStoreActions,
-  T = never,
->(
-  store: VueMicroStore<S, A>,
-  selector?: VueMicroStoreSelector<T, S>,
-): ReuseMicroStoreResult<S, A, T> {
-  const initial = selector ? store(selector) : store();
-  const output = shallowReactive({
-    ...initial,
-    state: createRenderableState(initial.state),
-  }) as Record<string, any>;
+>(store: VueMicroStore<S, A>): ReuseMicroStoreHook<S, A> {
+  function useStore(): ReuseMicroStoreResult<S, A>;
+  function useStore<T>(
+    selector: VueMicroStoreSelector<T, S>,
+  ): ReuseMicroStoreResult<S, A, T>;
+  function useStore<T>(
+    selector?: VueMicroStoreSelector<T, S>,
+  ): ReuseMicroStoreResult<S, A, T> {
+    const initial = selector ? store(selector) : store();
+    const output = shallowReactive({
+      ...initial,
+      state: createRenderableState(initial.state),
+    }) as Record<string, any>;
 
-  effect(
-    () => {
-      const next = selector ? store(selector) : store();
+    effect(
+      () => {
+        const next = selector ? store(selector) : store();
 
-      Object.entries(next).forEach(([key, value]) => {
-        output[key] = key === 'state' ? createRenderableState(value) : value;
-      });
-    },
-    () => getStoreSnapshot(store, selector),
-  );
+        Object.entries(next).forEach(([key, value]) => {
+          output[key] = key === 'state' ? createRenderableState(value) : value;
+        });
+      },
+      () => getStoreSnapshot(store, selector),
+    );
 
-  return output as ReuseMicroStoreResult<S, A, T>;
+    return output as ReuseMicroStoreResult<S, A, T>;
+  }
+
+  return useStore as ReuseMicroStoreHook<S, A>;
 }

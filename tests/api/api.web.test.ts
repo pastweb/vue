@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils';
 import { defineComponent, h } from 'vue';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { QUERY_CACHE_CONTEXT_KEY } from '@pastweb/tools/api/createQueryCache/constants';
 import { reactive } from '@pastweb/tools/reactivity';
 import {
@@ -8,10 +8,45 @@ import {
   reuseMutation,
   reuseQuery,
   useApiQueryCache,
+  useInfiniteQuery,
+  useQueries,
   useQuery,
 } from '../../src/api';
 import type { QueryResponse } from '@pastweb/tools/api/createApiAgent/types';
 import type { QueryCache } from '@pastweb/tools/api/createQueryCache/types';
+
+const queryMarkerMock = vi.hoisted(() => ({
+  setAsInfiniteQuery: vi.fn(),
+  setAsQueries: vi.fn(),
+  setAsQuery: vi.fn(),
+}));
+
+vi.mock('@pastweb/tools/api/hooks/useQuery', async importOriginal => {
+  const actual = await importOriginal();
+
+  return {
+    ...actual,
+    setAsQuery: queryMarkerMock.setAsQuery,
+  };
+});
+
+vi.mock('@pastweb/tools/api/hooks/useInfiniteQuery', async importOriginal => {
+  const actual = await importOriginal();
+
+  return {
+    ...actual,
+    setAsInfiniteQuery: queryMarkerMock.setAsInfiniteQuery,
+  };
+});
+
+vi.mock('@pastweb/tools/api/hooks/useQueries', async importOriginal => {
+  const actual = await importOriginal();
+
+  return {
+    ...actual,
+    setAsQueries: queryMarkerMock.setAsQueries,
+  };
+});
 
 function createDeferred<T>() {
   let resolve!: (value: T) => void;
@@ -107,6 +142,42 @@ describe('Vue API composables', () => {
     await waitFor(() => {
       expect(wrapper.text()).toBe('1');
     });
+  });
+
+  it('marks Vue query bridges with their corresponding tools query type', () => {
+    queryMarkerMock.setAsQuery.mockClear();
+    queryMarkerMock.setAsInfiniteQuery.mockClear();
+    queryMarkerMock.setAsQueries.mockClear();
+
+    let query: unknown;
+    let infiniteQuery: unknown;
+    let queries: unknown;
+
+    const Probe = defineComponent({
+      setup() {
+        query = useQuery({
+          immediate: false,
+          fn: async () => ({} as QueryResponse<{ name: string }>),
+        });
+        infiniteQuery = useInfiniteQuery({
+          immediate: false,
+          initialPageParam: 0,
+          fn: async () => ({} as QueryResponse<{ name: string }>),
+        });
+        queries = useQueries([{
+          immediate: false,
+          fn: async () => ({} as QueryResponse<{ name: string }>),
+        }]);
+
+        return () => h('span', 'ready');
+      },
+    });
+
+    mount(Probe);
+
+    expect(queryMarkerMock.setAsQuery).toHaveBeenCalledWith(query);
+    expect(queryMarkerMock.setAsInfiniteQuery).toHaveBeenCalledWith(infiniteQuery);
+    expect(queryMarkerMock.setAsQueries).toHaveBeenCalledWith(queries);
   });
 
   it('wraps tools useQuery and rerenders when query data resolves', async () => {
