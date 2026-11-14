@@ -1,6 +1,6 @@
 {
   "name": "@pastweb/vue",
-  "version": "2.2.1",
+  "version": "2.7.0",
   "description": "Vue bindings for Pastweb: composables and components for routing, portals, API query hooks, SSR entries, islands, Pinia stores, and reactive state.",
   "keywords": [
     "api-query",
