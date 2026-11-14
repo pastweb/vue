@@ -7,6 +7,7 @@ import {
   setAsPortalHandler,
   type PortalHandler,
 } from '@pastweb/tools/portals';
+import { WINDOW_MANAGER_CONTEXT_KEY, type WindowManager } from '@pastweb/tools';
 import { setContext } from '../../src/setContext';
 import {
   installPortals,
@@ -15,6 +16,7 @@ import {
   usePortalAnchors,
   usePortals,
 } from '../../src/portals';
+import { installWindowManager, useWindowManager } from '../../src/windowManager';
 
 function createHandler(overrides: Partial<PortalHandler> = {}) {
   return setAsPortalHandler({
@@ -141,5 +143,84 @@ describe('portals', () => {
     expect(update).toHaveBeenCalledWith({ title: 'Updated' });
     expect(close).toHaveBeenCalled();
     expect(remove).toHaveBeenCalled();
+  });
+
+  it('given a managed portal, when it is removed, then it unregisters its window entry', async () => {
+    const close = vi.fn();
+    let notifyRemoved!: () => void;
+    const handler = createHandler({
+      close,
+      onRemove: vi.fn(callback => { notifyRemoved = callback; }),
+    });
+    const createHandlerForPortal = vi.fn(() => handler);
+    const register = vi.fn();
+    const unregister = vi.fn();
+    const manager = {
+      register,
+      unregister,
+    } as unknown as WindowManager;
+    let portal!: ReturnType<typeof usePortal>;
+    const Root = defineComponent({
+      setup() {
+        setContext(PORTALS_CONTEXT_KEY, { modal: createHandlerForPortal });
+        portal = usePortal();
+
+        return () => h(Portal, { manager, path: 'modal', use: portal }, {
+          default: () => h('span', 'Dialog'),
+        });
+      },
+    });
+
+    mount(Root);
+    portal.open();
+    portal.open();
+
+    await vi.waitFor(() => expect(register).toHaveBeenCalledWith({
+      id: 'entry-1',
+      requestClose: expect.any(Function),
+    }));
+
+    expect(createHandlerForPortal).toHaveBeenCalledTimes(1);
+    const component = createHandlerForPortal.mock.calls[0][0] as { props?: Record<string, unknown> };
+    expect(component.props?.manager).toBe(manager);
+
+    const registration = register.mock.calls[0][0];
+    registration.requestClose?.();
+    notifyRemoved();
+
+    expect(close).toHaveBeenCalled();
+    expect(unregister).toHaveBeenCalledWith('entry-1');
+    expect(portal.id).toBe(false);
+  });
+
+  it('given an installed manager, when consumed in setup, then it returns the shared instance', () => {
+    const manager = {} as WindowManager;
+    const Probe = defineComponent({
+      setup() {
+        const resolved = useWindowManager();
+        return () => h('span', resolved === manager ? 'available' : 'missing');
+      },
+    });
+    const Root = defineComponent({
+      setup() {
+        setContext(WINDOW_MANAGER_CONTEXT_KEY, manager);
+        return () => h(Probe);
+      },
+    });
+
+    expect(mount(Root).text()).toBe('available');
+  });
+
+  it('given a window manager, when installed, then it provides the shared context value', () => {
+    const manager = {} as WindowManager;
+    const provided: Record<string, unknown> = {};
+
+    installWindowManager({ manager }).install({
+      provide(key: string, value: unknown) {
+        provided[key] = value;
+      },
+    } as any);
+
+    expect(provided[WINDOW_MANAGER_CONTEXT_KEY]).toBe(manager);
   });
 });
