@@ -50,15 +50,12 @@ const toolsMock = vi.hoisted(() => {
   };
 });
 
-vi.mock('@pastweb/tools/createMatchScheme', () => ({
+vi.mock('@pastweb/tools', () => ({
   createMatchScheme: toolsMock.createMatchScheme,
-}));
-
-vi.mock('@pastweb/tools/update', () => ({
   update: toolsMock.update,
 }));
 
-const { useColorScheme } = await import('../../src/useColorScheme');
+const { reuseColorScheme, useColorScheme } = await import('../../src/useColorScheme');
 
 describe('useColorScheme', () => {
   beforeEach(() => {
@@ -66,11 +63,14 @@ describe('useColorScheme', () => {
     toolsMock.update.mockClear();
   });
 
+  it('creates a composable from a shared match scheme', () => {
+    expect(typeof reuseColorScheme(createMockMatchScheme() as any)).toBe('function');
+  });
+
   it('returns current scheme and setMode function', () => {
-    const matchScheme = createMockMatchScheme();
     const Probe = defineComponent({
       setup() {
-        const [scheme, setMode] = useColorScheme({}, matchScheme as any);
+        const [scheme, setMode] = useColorScheme();
 
         return () => h('button', { onClick: () => setMode('dark') }, scheme.selected);
       },
@@ -79,7 +79,7 @@ describe('useColorScheme', () => {
     const wrapper = mount(Probe);
 
     expect(wrapper.text()).toBe('auto');
-    expect(typeof matchScheme.setMode).toBe('function');
+    expect(toolsMock.createMatchScheme).toHaveBeenCalledWith({});
   });
 
   it('creates an internal match scheme from options when none is provided', () => {
@@ -98,9 +98,10 @@ describe('useColorScheme', () => {
 
   it('updates state when mode changes', async () => {
     const matchScheme = createMockMatchScheme();
+    const useSharedColorScheme = reuseColorScheme(matchScheme as any);
     const Probe = defineComponent({
       setup() {
-        const [scheme, setMode] = useColorScheme({}, matchScheme as any);
+        const [scheme, setMode] = useSharedColorScheme();
 
         return () => h('button', { onClick: () => setMode('dark') }, scheme.selected);
       },
@@ -116,9 +117,10 @@ describe('useColorScheme', () => {
 
   it('updates state when system scheme changes', async () => {
     const matchScheme = createMockMatchScheme();
+    const useSharedColorScheme = reuseColorScheme(matchScheme as any);
     const Probe = defineComponent({
       setup() {
-        const [scheme] = useColorScheme({}, matchScheme as any);
+        const [scheme] = useSharedColorScheme();
 
         return () => h('span', scheme.system);
       },
@@ -142,9 +144,10 @@ describe('useColorScheme', () => {
       onModeChange: vi.fn(() => ({ removeListener: removeModeListener })),
       onSysSchemeChange: vi.fn(() => ({ removeListener: removeSysListener })),
     };
+    const useSharedColorScheme = reuseColorScheme(matchScheme as any);
     const Probe = defineComponent({
       setup() {
-        useColorScheme({}, matchScheme as any);
+        useSharedColorScheme();
 
         return () => h('span', 'theme');
       },
@@ -160,12 +163,13 @@ describe('useColorScheme', () => {
 
   it('keeps shared match scheme instances in sync', async () => {
     const matchScheme = createMockMatchScheme();
+    const useSharedColorScheme = reuseColorScheme(matchScheme as any);
     const Probe = defineComponent({
       props: {
         label: String,
       },
       setup(props) {
-        const [scheme, setMode] = useColorScheme({}, matchScheme as any);
+        const [scheme, setMode] = useSharedColorScheme();
 
         return () => h('button', { onClick: () => setMode('light') }, `${props.label}:${scheme.selected}`);
       },

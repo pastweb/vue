@@ -1,21 +1,15 @@
-import { shallowReactive } from 'vue';
-import { createMatchScheme } from '@pastweb/tools/createMatchScheme';
-import { update } from '@pastweb/tools/update';
-import { useBeforeUnmount } from '../useBeforeUnmount';
-import type { RemoveListener } from '@pastweb/tools/createEventEmitter/types';
-import type { MatchScheme, ColorSchemeInfo, SchemeOptions } from '@pastweb/tools/createMatchScheme/types';
+import { createMatchScheme } from '@pastweb/tools';
+import { reuseColorScheme } from './reuseColorScheme';
+import type { ColorSchemeInfo, SchemeOptions } from '@pastweb/tools';
 
 /**
  * Vue composable for reading and updating the current color scheme.
  *
- * The signature mirrors `useColorScheme` from `@pastweb/tools` and the React
- * package: pass options to create an internal `MatchScheme`, or pass a
- * pre-created `matchScheme` as the second argument. The Vue wrapper subscribes
- * to mode/system changes and cleans those listeners up before component
- * unmount.
+ * Creates an internal `MatchScheme` with `createMatchScheme` and subscribes to
+ * mode and system changes. To bind an existing `MatchScheme`, use
+ * {@link reuseColorScheme}.
  *
- * @param options - Options passed to `createMatchScheme` when `matchScheme` is not provided.
- * @param matchScheme - Optional pre-created `MatchScheme` instance.
+ * @param options - Options passed to `createMatchScheme`.
  * @returns A tuple with the current color scheme info and the mode setter.
  *
  * @example
@@ -27,21 +21,8 @@ import type { MatchScheme, ColorSchemeInfo, SchemeOptions } from '@pastweb/tools
  * setMode(scheme.selected === 'dark' ? 'light' : 'dark');
  * ```
  */
-export function useColorScheme(options: SchemeOptions = {}, matchScheme?: MatchScheme): [ColorSchemeInfo, (mode: string) => void] {
-  const scheme = matchScheme ?? createMatchScheme(options);
-  const current = shallowReactive(scheme.getInfo()) as ColorSchemeInfo;
+export function useColorScheme(options: SchemeOptions = {}): [ColorSchemeInfo, (mode: string) => void] {
+  const useReusedColorScheme = reuseColorScheme(createMatchScheme(options));
 
-  const updateCurrent = () => update(current, scheme.getInfo());
-
-  const onModeChange: RemoveListener = scheme.onModeChange(updateCurrent);
-  const onSysChange: RemoveListener = scheme.onSysSchemeChange(updateCurrent);
-
-  updateCurrent();
-
-  useBeforeUnmount(() => {
-    onModeChange.removeListener();
-    onSysChange.removeListener();
-  });
-
-  return [current, scheme.setMode];
+  return useReusedColorScheme();
 }
