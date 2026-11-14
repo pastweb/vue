@@ -11,6 +11,7 @@ It provides Vue-specific bindings for the framework-agnostic primitives in `@pas
 - **Router integration** - Vue components and composables for `createViewRouter`.
 - **Entry composition** - Vue entry helpers for mounting, updating, plugins, components, directives, and async waits.
 - **Portal support** - Vue components and composables for portal descriptors and anchors.
+- **Window Manager support** - Vue plugin and composable support for application-managed portal windows.
 - **TypeScript-first** - Public APIs include TSDoc and exported types for app-level integration.
 
 ## Installation
@@ -32,9 +33,9 @@ The documentation is organized into the following major categories. Each section
 - **Async functions** - Pinia async store helpers and color-scheme composable factory.
 - **Routing** - Vue integration for `createViewRouter`.
 - **Browser functions** - Browser-aware composables such as device matching.
-- **Element functions** - Async rendering, entry rendering, islands, portals, slots, and UI composition helpers.
+- **Element functions** - Async rendering, remote-module loading, entry rendering, islands, portals, slots, and UI composition helpers.
 - **Hook functions** - Vue lifecycle and mediator composables.
-- **Utility functions** - Small Vue utilities such as `Render`, `computed`, `useRef`, `getEventHandlers`, `withDefaultProps`, and `withDefaultPropsHandlers`.
+- **Utility functions** - Small Vue utilities such as `Render`, `computed`, `useRef`, and `withDefaultProps`.
 
 This project is distributed under the MIT licence.
 
@@ -56,9 +57,10 @@ This project is distributed under the MIT licence.
   - [createPiniaAsyncStore](#createpiniaasyncstore)
   - [createMicroStore](#createmicrostore)
   - [reuseMicroStore](#reusemicrostore)
+  - [reuseColorScheme](#reusecolorscheme)
   - [useColorScheme](#usecolorscheme)
 - [Routing](#routing)
-  - [createRouter](#createrouter)
+  - [installRouter](#installrouter)
   - [RouterView](#routerview)
   - [RouterLink](#routerlink)
   - [useLocation](#uselocation)
@@ -73,11 +75,13 @@ This project is distributed under the MIT licence.
   - [reuseMatchDevice](#reusematchdevice)
 - [Element functions](#element-functions)
   - [AsyncComponent](#asynccomponent)
+  - [Remote](#remote)
   - [createEntry](#createentry)
   - [createServerEntry](#createserverentry)
   - [EntryAdapter](#entryadapter)
   - [Island](#island)
   - [portals](#portals)
+  - [window manager](#window-manager)
   - [Render](#render)
   - [Slot](#slot)
 - [Hook functions](#hook-functions)
@@ -90,8 +94,6 @@ This project is distributed under the MIT licence.
   - [computed](#computed)
   - [useChildren](#usechildren)
   - [withDefaultProps](#withdefaultprops)
-  - [getEventHandlers](#geteventhandlers)
-  - [withDefaultPropsHandlers](#withdefaultpropshandlers)
 
 ---
 ## Core functions
@@ -428,11 +430,11 @@ Returns
   * Vue composable for reading the full store or a selected state value.
 
 **Example:**
-```vue
-<script setup lang="ts">
+```ts
+// @/stores/counterStore.ts
 import { createMicroStore } from '@pastweb/vue';
 
-const useCounterStore = createMicroStore('counter', () => ({
+export const useCounterStore = createMicroStore('counter', () => ({
   state: { count: 0 },
   actions: {
     increment() {
@@ -440,6 +442,12 @@ const useCounterStore = createMicroStore('counter', () => ({
     },
   },
 }));
+```
+
+```vue
+<!-- Counter.vue -->
+<script setup lang="ts">
+import { useCounterStore } from '@/stores/counterStore';
 
 const { state, increment } = useCounterStore(state => state.count);
 </script>
@@ -453,32 +461,30 @@ const { state, increment } = useCounterStore(state => state.count);
 
 ### `reuseMicroStore`
 
-`reuseMicroStore` bridges a tools micro-store that was created elsewhere into Vue rendering. Use it when the store belongs to the framework-agnostic layer, but a Vue component needs to read it and update when selected tools reactive state changes.
+`reuseMicroStore` bridges a tools micro-store that was created elsewhere into Vue rendering. It returns a **Vue composable** (same shape as `createMicroStore`). Call that composable in `setup`, optionally with a selector.
 
 > #### Syntax
 
 ```ts
-function reuseMicroStore<S, A, T = S>(
+function reuseMicroStore<S, A>(
   store: UseMicroStore<S, A>,
-  selector?: VueMicroStoreSelector<T, S>,
-): ReuseMicroStoreResult<S, A, T>
+): ReuseMicroStoreHook<S, A>
+// useStore() | useStore(selector)
 ```
 
 Parameters
 
 * `store`: `UseMicroStore<S, A>`
   * Store returned by `createMicroStore` from `@pastweb/tools`.
-* `selector`: `VueMicroStoreSelector<T, S>` _(optional)_
-  * Optional selector passed to the tools store.
 
 Returns
 
-* `ReuseMicroStoreResult<S, A, T>`
-  * Full or selected readonly state plus the original actions.
+* `ReuseMicroStoreHook<S, A>`
+  * Composable: full store or selected state plus the original actions.
 
 **Example:**
-```vue
-<script setup lang="ts">
+```ts
+// @/stores/settingsStore.ts
 import { createMicroStore } from '@pastweb/tools';
 import { reuseMicroStore } from '@pastweb/vue';
 
@@ -498,7 +504,15 @@ const settingsStore = createMicroStore('settings', () => ({
   },
 }));
 
-const user = reuseMicroStore(settingsStore, state => state.user);
+export const useSettingsStore = reuseMicroStore(settingsStore);
+```
+
+```vue
+<!-- UserSummary.vue -->
+<script setup lang="ts">
+import { useSettingsStore } from '@/stores/settingsStore';
+
+const user = useSettingsStore(state => state.user);
 </script>
 
 <template>
@@ -508,14 +522,35 @@ const user = reuseMicroStore(settingsStore, state => state.user);
 </template>
 ```
 
-### `useColorScheme`
+### `reuseColorScheme`
 
-Vue composable for color-scheme state from `@pastweb/tools`. Pass options to create an internal `MatchScheme`, or pass a pre-created `MatchScheme` as the second argument.
+Creates a Vue color-scheme composable bound to an existing `MatchScheme`. Each consuming component receives a reactive mirror and removes its subscriptions on unmount.
 
 > #### Syntax
 
 ```ts
-function useColorScheme(options?: SchemeOptions, matchScheme?: MatchScheme): [ColorSchemeInfo, (mode: string) => void]
+function reuseColorScheme(matchScheme: MatchScheme): () => [ColorSchemeInfo, (mode: string) => void]
+```
+
+**Example:**
+```ts
+import { createMatchScheme } from '@pastweb/tools';
+import { reuseColorScheme } from '@pastweb/vue';
+
+const useColorScheme = reuseColorScheme(createMatchScheme({ defaultMode: 'auto' }));
+const [info, setMode] = useColorScheme();
+
+setMode('dark');
+```
+
+### `useColorScheme`
+
+Vue composable for color-scheme state from `@pastweb/tools`. It creates a `MatchScheme` from the supplied options. Use `reuseColorScheme` to bind to an existing matcher.
+
+> #### Syntax
+
+```ts
+function useColorScheme(options?: SchemeOptions): [ColorSchemeInfo, (mode: string) => void]
 ```
 
 **Example:**
@@ -532,27 +567,27 @@ setMode('dark');
 
 The router helpers integrate Vue with `createViewRouter` from `@pastweb/tools`. The tools router owns the route matching and reactive router state; this package provides Vue plugin installation, Vue dependency-injection access, and Vue-friendly reactive mirrors for components and composables.
 
-### `createRouter`
+### `installRouter`
 
 Creates a Vue plugin for a tools `ViewRouter`. It provides the router under the shared tools router context key, initializes route depth for nested `RouterView` components, and registers `RouterView` and `RouterLink` globally.
 
 > #### Syntax
 
 ```ts
-function createRouter(router: ViewRouter): Plugin;
+function installRouter(router: ViewRouter): Plugin;
 ```
 
 **Example:**
 ```ts
 import { createViewRouter, type Route } from '@pastweb/tools';
-import { createRouter, RouterView } from '@pastweb/vue';
+import { installRouter, RouterView } from '@pastweb/vue';
 
 const router = createViewRouter({
   routes: routes as Route[],
   RouterView,
 });
 
-app.use(createRouter(router));
+app.use(installRouter(router));
 ```
 
 ### `RouterView`
@@ -916,6 +951,46 @@ const dependencies: DependencyInfo[] = [{
 </template>
 ```
 
+### `Remote`
+
+`Remote` loads a micro-frontend Vue module after resolving an optional remote bootstrap dependency or dependency group. It renders `fallback` while loading and `errorFallback` if a dependency or remote module cannot be loaded. It is intentionally separate from `AsyncComponent`, which is designed for local async component loading and SSR task composition.
+
+> #### Syntax
+
+```ts
+interface RemoteProps {
+  component: () => Promise<{ default: Component }>;
+  dependency?: (() => Promise<any>) | Array<() => Promise<any>>;
+  fallback?: Content | null;
+  errorFallback?: Content | null;
+}
+```
+
+**Example:**
+
+```vue
+<script setup lang="ts">
+import { Remote } from '@pastweb/vue';
+import LoadingPanel from './LoadingPanel.vue';
+import RemoteUnavailable from './RemoteUnavailable.vue';
+
+const dependencies = [
+  () => import('reports/bootstrap'),
+  () => import('reports/translations'),
+];
+</script>
+
+<template>
+  <Remote
+    :component="() => import('reports/App')"
+    :dependency="dependencies"
+    :fallback="LoadingPanel"
+    :error-fallback="RemoteUnavailable"
+    locale="en-GB"
+  />
+</template>
+```
+
 ### `createEntry`
 
 Creates a browser-side Vue entry object that can mount, hydrate, update, and unmount a Vue application. It supports Vue plugins, component/directive registration, and async wait/fallback configuration.
@@ -1151,15 +1226,17 @@ Vue component that connects a `usePortal()` handler to an installed portal path.
 interface PortalProps {
   path: string;
   use: PortalHandler & { isReady: () => void };
+  manager?: WindowManager;
 }
 ```
 
 **Example:**
 ```vue
 <script setup lang="ts">
-import { Portal, usePortal } from '@pastweb/vue';
+import { Portal, usePortal, useWindowManager } from '@pastweb/vue';
 
 const sheet = usePortal();
+const manager = useWindowManager();
 </script>
 
 <template>
@@ -1167,9 +1244,68 @@ const sheet = usePortal();
     Open sheet
   </button>
 
-  <Portal path="viewSheet" :use="sheet">
+  <Portal path="viewSheet" :use="sheet" :manager="manager">
     <Sheet title="Route details" />
   </Portal>
+</template>
+```
+
+When a manager is supplied, Portal registers the opened entry with it and
+unregisters the entry only after the portal handler reports removal. The
+manager's close request is forwarded to the portal handler's `close()` method.
+
+### `window manager`
+
+Window Manager helpers make one application-owned `WindowManager` available to
+Vue components. The manager itself is created by `@pastweb/tools`; this package
+only installs and reads that shared instance.
+
+#### `installWindowManager`
+
+Creates a Vue plugin that provides a manager under the shared Window Manager
+context key.
+
+```ts
+function installWindowManager(options: WindowManagerOptions): Plugin;
+
+interface WindowManagerOptions {
+  manager: WindowManager;
+}
+```
+
+**Example:**
+
+```ts
+import { createApp } from 'vue';
+import { createWindowManager } from '@pastweb/tools';
+import { installWindowManager } from '@pastweb/vue';
+
+const app = createApp(App);
+const manager = createWindowManager();
+
+app.use(installWindowManager({ manager }));
+```
+
+#### `useWindowManager`
+
+Reads the nearest installed Window Manager, or returns `undefined` when one was
+not installed.
+
+```ts
+function useWindowManager(): WindowManager | undefined;
+```
+
+**Example:**
+
+```vue
+<script setup lang="ts">
+import { useWindowManager } from '@pastweb/vue';
+
+const manager = useWindowManager();
+</script>
+
+<template>
+  <button v-if="manager" @click="manager.closeAll()">Close all windows</button>
 </template>
 ```
 
@@ -1214,17 +1350,17 @@ const vnode = h('button', 'Save');
 
 ### `Slot`
 
-`Slot` renders one of its own Vue slots by name, with optional prop injection or content mapping. It is useful for small composition wrappers where the component chooses which slot to display, applies common attributes/listeners to the rendered VNodes, or wraps slot output without forcing callers to repeat markup.
+`Slot` renders a named slot from its owning component with optional prop injection or content mapping. It is useful for component wrappers that need to apply common attributes/listeners to public slot content, or wrap it without forcing callers to repeat markup.
 
-When `name` is omitted, `Slot` renders the default slot. When a named slot is requested but not provided, it falls back to the default slot. If `props` are provided, the rendered VNode or VNodes are cloned with those props. If `map` is provided, it receives the slot content and its return value is rendered instead; `map` takes precedence over `props`.
+Use `name` to select the public slot to render; it defaults to `default`. `Slot` resolves that slot from the component that owns it, so callers do not need to pass `$slots` manually. If the requested owner slot is absent, it falls back to a matching slot declared directly on `Slot`, then to `Slot`'s default content. `props` are passed to the selected scoped slot. When `map` is omitted, they are also cloned onto the rendered VNode or VNodes. If `map` is provided, it receives each VNode and its index and replaces the cloning step; scoped slot props remain available.
 
 Parameters
 * `name`: `string` _(optional)_
-  * Slot name to render. Defaults to `default`.
+  * Public slot name to render. Defaults to `default`.
 * `props`: `Record<string, any>` _(optional)_
-  * Props, classes, attrs, or listeners cloned onto each rendered slot VNode.
-* `map`: `(content: VNode | VNode[]) => VNode | VNode[]` _(optional)_
-  * Transform function for wrapping or replacing the rendered slot content.
+  * Scoped values passed to the selected slot. Without `map`, they are also cloned as props, classes, attrs, or listeners onto each rendered VNode.
+* `map`: `(content: VNode, index: number) => VNode | VNode[]` _(optional)_
+  * Transform function for wrapping or replacing each rendered slot VNode; it prevents VNode prop cloning but not scoped slot props.
 
 **Example:**
 ```vue
@@ -1237,23 +1373,19 @@ const buttonProps = {
   onClick: () => console.log('Action clicked'),
 };
 
-const wrapContent = content => h('section', { class: 'panel-body' }, content);
+const wrapContent = (content, index) => h('section', { class: `panel-body panel-${index}` }, content);
 </script>
 
 <template>
-  <Slot name="title">
-    <template #title>
-      <h2>Settings</h2>
-    </template>
+  <Slot name="title" :props="{ class: 'title' }">
+    <h2>Settings</h2>
   </Slot>
 
   <Slot :props="buttonProps">
     <button>Save</button>
   </Slot>
 
-  <Slot :map="wrapContent">
-    <p>Mapped default content.</p>
-  </Slot>
+  <Slot :map="wrapContent" />
 </template>
 ```
 
@@ -1512,9 +1644,9 @@ export default {
 
 `withDefaultProps` merges Vue props with defaults and returns a reactive normalized object. Defaults are used only when the incoming prop value is `undefined`; explicit falsy values such as `false`, `0`, and `''` are preserved.
 
-The helper also includes Vue-specific normalization. Vue coerces absent Boolean props to `false` at runtime, which means a defaulting helper cannot tell whether a Boolean prop was omitted or explicitly passed as `false`. For that reason, `booleanChars` lets you model those props as string markers first, then normalize them after defaults are applied. By default, `+` becomes `true` and `-` becomes `false`.
+The helper also includes Vue-specific normalization. Vue coerces absent Boolean props to `false` at runtime, which means a defaulting helper cannot tell whether a Boolean prop was omitted or explicitly passed as `false`. For that reason, `booleanChars` lets you model defaulted props as string markers first, then normalize them after defaults are applied. Normalization applies only to keys present in `defaults` and is disabled by default.
 
-A default named `className` is exposed as Vue's `class` prop by default.
+A public Vue `class` prop is normalized to a default named `className` by default.
 
 Use `exclude` for defaults that should not be applied by this helper. If the source props object already contains an excluded key, that provided value is preserved; otherwise the excluded default is omitted.
 
@@ -1523,7 +1655,7 @@ Use `exclude` for defaults that should not be applied by this helper. If the sou
 function withDefaultProps<T>(props: Record<string, any>, defaults: Record<string, any>, options?: Options): T
 
 interface Options {
-  booleanChars?: [string, string];
+  booleanChars?: false | true | [string, string];
   className?: boolean;
   exclude?: string | RegExp | Array<string | RegExp>;
 }
@@ -1535,8 +1667,8 @@ Parameters
 * `defaults`: `Record<string, any>`
   * Defaults applied when a prop is `undefined`.
 * `options`: `Options` _(optional)_
-  * `booleanChars` controls string-to-boolean conversion for Boolean-like props that need to avoid Vue's absent-Boolean-to-`false` coercion. Defaults to `['+', '-']`.
-  * `className` controls whether `className` defaults are mapped to `class`. Defaults to `true`.
+* `booleanChars` controls string-to-boolean conversion for Boolean-like default props that need to avoid Vue's absent-Boolean-to-`false` coercion. Omit it, pass `undefined`, or pass `false` to disable conversion. Pass `true` to use `DEFAULT_BOOLEAN_CHARS` (`['true', 'false']`), or a tuple such as `['yes', 'no']` to use custom markers.
+  * `className` controls whether the public `class` prop is mapped to a `className` default. Defaults to `true`.
   * `exclude` prevents matching default keys from being applied. Strings match exact keys and regular expressions match the original key from `defaults`.
 
 **Example:**
@@ -1546,23 +1678,23 @@ import { withDefaultProps } from '@pastweb/vue';
 
 const props = defineProps<{
   tone?: 'neutral' | 'accent';
-  block?: '+' | '-';
-  className?: string;
+  block?: 'true' | 'false';
+  class?: string;
 }>();
 
 const p = withDefaultProps<{
   tone: 'neutral' | 'accent';
   block: boolean;
-  class: string;
+  className: string;
 }>(props, {
   tone: 'neutral',
-  block: '-',
+  block: 'false',
   className: 'button',
 });
 </script>
 
 <template>
-  <button :class="p.class" :data-tone="p.tone" :data-block="p.block">
+  <button :class="p.className" :data-tone="p.tone" :data-block="p.block">
     <slot />
   </button>
 </template>
@@ -1583,127 +1715,6 @@ const p = withDefaultProps(
     exclude: ['debug', /^internal/],
   },
 );
-```
-
-### `getEventHandlers`
-
-`getEventHandlers` extracts Vue-style handler props into an object that can be passed to `v-on`. Handler props must start with `on` followed by an uppercase character, such as `onClick`, `onChange`, or `onUpdateModelValue`. Regular props such as `online` or `once` are ignored.
-
-The returned event names are lower kebab case after removing the `on` prefix, so `onClick` becomes `click` and `onUpdateModelValue` becomes `update-model-value`.
-
-> #### Syntax
-```ts
-function getEventHandlers(
-  props: Record<string, any>,
-  options?: Options,
-): Record<string, Function>
-
-interface Options {
-  exclude?: string | RegExp | Array<string | RegExp>;
-}
-```
-
-Parameters
-* `props`: `Record<string, any>`
-  * Source object containing regular props and handler props.
-* `options`: `Options` _(optional)_
-  * `exclude` removes matching extracted event names. Strings match exact event names and regular expressions match the kebab-cased event name.
-
-Returns
-* `Record<string, Function>`
-  * Event map ready for `v-on`.
-
-**Example:**
-```vue
-<script setup lang="ts">
-import { getEventHandlers } from '@pastweb/vue';
-
-const props = defineProps<{
-  title?: string;
-  online?: () => void;
-  onClick?: () => void;
-  onUpdateModelValue?: (value: string) => void;
-}>();
-
-const events = getEventHandlers(props, {
-  exclude: 'update-model-value',
-});
-</script>
-
-<template>
-  <button v-on="events">
-    {{ props.title }}
-  </button>
-</template>
-```
-
-### `withDefaultPropsHandlers`
-
-`withDefaultPropsHandlers` combines `withDefaultProps` with event-handler extraction. It returns normalized props for `v-bind` and a separate event map for `v-on`, which is useful for wrapper components that forward both props and listeners.
-
-Event handler props are detected only when the prop name starts with `on` followed by an uppercase character, such as `onClick`, `onChange`, or `onUpdateModelValue`. This keeps regular props such as `online` or `once` from being removed from the normalized props object.
-
-> #### Syntax
-```ts
-function withDefaultPropsHandlers<T>(
-  props: Record<string, any>,
-  defaults: Record<string, any>,
-  options?: Options,
-): [T, Record<string, Function>]
-
-interface Options {
-  booleanChars?: [string, string];
-  className?: boolean;
-  excludeProps?: string | RegExp | Array<string | RegExp>;
-  excludeHandlers?: string | RegExp | Array<string | RegExp>;
-}
-```
-
-Parameters
-* `props`: `Record<string, any>`
-  * Source Vue props object.
-* `defaults`: `Record<string, any>`
-  * Defaults applied to regular props and default handlers.
-* `options`: `Options` _(optional)_
-  * `booleanChars` and `className` are passed to `withDefaultProps`.
-  * `excludeProps` excludes keys from default merging.
-  * `excludeHandlers` excludes extracted event names after removing `on` and converting to kebab case.
-
-Returns
-* `[T, Record<string, Function>]`
-  * Normalized props and extracted event handlers.
-
-**Example:**
-```vue
-<script setup lang="ts">
-import { withDefaultPropsHandlers } from '@pastweb/vue';
-
-const props = defineProps<{
-  tone?: 'neutral' | 'accent';
-  block?: '+' | '-';
-  online?: () => void;
-  onClick?: () => void;
-  onUpdateModelValue?: (value: string) => void;
-}>();
-
-const [p, events] = withDefaultPropsHandlers<{
-  tone: 'neutral' | 'accent';
-  block: boolean;
-  online: () => void;
-}>(props, {
-  tone: 'neutral',
-  block: '-',
-  online: () => {},
-  onClick: () => {},
-  onUpdateModelValue: () => {},
-});
-</script>
-
-<template>
-  <button v-bind="p" v-on="events">
-    <slot />
-  </button>
-</template>
 ```
 
 ## License

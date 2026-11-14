@@ -1,11 +1,16 @@
 # Changelog
 
-- Added `reuseMatchDevice` to bridge tools reactive device state into Vue rendering.
-- Added the Vue `useMatchDevice` composable with reactive device matches, package exports, documentation, and test coverage.
-- Added the Vue `AsyncComponent` surface with dependency loading, client fallback rendering, SSR async-task preloading, package exports, Vue README examples, and browser/server test coverage.
-- Added a Vue `createMicroStore` factory that wraps tools micro-stores and returns a Vue-ready composable.
-- Added `reuseMicroStore` for bridging framework-agnostic tools micro-stores into Vue rendering with selector support.
-- Exported the micro-store surface from the package root and added package subpaths for `createMicroStore`, `reuseMicroStore`, and related types.
-- Documented `createMicroStore` and `reuseMicroStore` with Vue examples and root `@pastweb/tools` imports where available.
-- Added browser test coverage for full-store reuse, selector updates, deeply nested full-store changes, and deeply nested selected-object changes.
-- Updated root export tests to cover `createMicroStore` and `reuseMicroStore`.
+- Fixed managed floating-window bounds and drag persistence in the Vue renderer.
+  Window portal anchors now provide a full workspace, mediator bounds updates
+  invalidate rendered animation styles, and TaskBar controls remain above
+  floating windows so they can activate, minimize, and restore them.
+- Added `reuseColorScheme` and aligned `useColorScheme` with the React color-scheme composable API.
+- Renamed the Vue router plugin factory from `createRouter` to `installRouter`.
+- Added Vue Window Manager integration through `installWindowManager` and
+  `useWindowManager`.
+- Updated `Portal` to register managed portal entries, inject the manager into
+  portal content, prevent duplicate opens, and unregister entries after removal.
+- Updated `withDefaultProps` default boolean character normalization to use `'true'` and `'false'`.
+- Updated `Slot` to resolve the owning component's named slot before local
+  fallbacks, pass scoped props consistently, and invoke `map` for each rendered
+  VNode with its index.
