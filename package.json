@@ -57,8 +57,9 @@
   },
   "peerDependencies": {
     "@pastweb/tools": "^2.6.0",
+    "@vue/server-renderer": "^3.5.43",
     "pinia": "^3.0.4",
-    "vue": "^3.0.0"
+    "vue": "^3.5.43"
   },
   "peerDependenciesMeta": {
     "pinia": {
@@ -66,9 +67,10 @@
     }
   },
   "devDependencies": {
-    "@pastweb/tools": "^2.6.0",
+    "@pastweb/tools": "^2.7.0",
     "@types/node": "^22.15.17",
     "@vitejs/plugin-vue": "^5.2.4",
+    "@vue/server-renderer": "^3.5.43",
     "@vue/test-utils": "^2.4.6",
     "bumpp": "^10.1.0",
     "happy-dom": "^20.10.6",
@@ -80,7 +82,7 @@
     "unrun": "^0.3.1",
     "vite": "npm:rolldown-vite@latest",
     "vitest": "^3.1.3",
-    "vue": "^3.5.39",
+    "vue": "^3.5.43",
     "vue-tsc": "^2.2.10"
   },
   "exports": {
@@ -191,6 +193,22 @@
     "./AsyncComponent/utils": {
       "import": "./dist/AsyncComponent/utils.js",
       "require": "./dist/AsyncComponent/utils.cjs"
+    },
+    "./Remote": {
+      "import": "./dist/Remote/index.js",
+      "require": "./dist/Remote/index.cjs"
+    },
+    "./Remote/Remote": {
+      "import": "./dist/Remote/Remote.js",
+      "require": "./dist/Remote/Remote.cjs"
+    },
+    "./Remote/Remote.vue_vue_type_script_lang": {
+      "import": "./dist/Remote/Remote.vue_vue_type_script_lang.js",
+      "require": "./dist/Remote/Remote.vue_vue_type_script_lang.cjs"
+    },
+    "./Remote/types": {
+      "import": "./dist/Remote/types.js",
+      "require": "./dist/Remote/types.cjs"
     },
     "./computed": {
       "import": "./dist/computed/index.js",
@@ -363,18 +381,6 @@
     "./getContext/getContext": {
       "import": "./dist/getContext/getContext.js",
       "require": "./dist/getContext/getContext.cjs"
-    },
-    "./getEventHandlers": {
-      "import": "./dist/getEventHandlers/index.js",
-      "require": "./dist/getEventHandlers/index.cjs"
-    },
-    "./getEventHandlers/getEventHandlers": {
-      "import": "./dist/getEventHandlers/getEventHandlers.js",
-      "require": "./dist/getEventHandlers/getEventHandlers.cjs"
-    },
-    "./getEventHandlers/types": {
-      "import": "./dist/getEventHandlers/types.js",
-      "require": "./dist/getEventHandlers/types.cjs"
     },
     "./Island": {
       "import": "./dist/Island/index.js",
@@ -684,31 +690,15 @@
       "import": "./dist/withDefaultProps/withDefaultProps.js",
       "require": "./dist/withDefaultProps/withDefaultProps.cjs"
     },
-    "./withDefaultPropsHandlers": {
-      "import": "./dist/withDefaultPropsHandlers/index.js",
-      "require": "./dist/withDefaultPropsHandlers/index.cjs"
-    },
-    "./withDefaultPropsHandlers/constants": {
-      "import": "./dist/withDefaultPropsHandlers/constants.js",
-      "require": "./dist/withDefaultPropsHandlers/constants.cjs"
-    },
-    "./withDefaultPropsHandlers/types": {
-      "import": "./dist/withDefaultPropsHandlers/types.js",
-      "require": "./dist/withDefaultPropsHandlers/types.cjs"
-    },
-    "./withDefaultPropsHandlers/withDefaultPropsHandlers": {
-      "import": "./dist/withDefaultPropsHandlers/withDefaultPropsHandlers.js",
-      "require": "./dist/withDefaultPropsHandlers/withDefaultPropsHandlers.cjs"
-    },
     "./*": "./*"
   },
   "inlinedDependencies": {
     "@babel/parser": "7.29.7",
-    "@vue/compiler-core": "3.5.39",
-    "@vue/compiler-dom": "3.5.39",
-    "@vue/compiler-ssr": "3.5.39",
-    "@vue/server-renderer": "3.5.39",
-    "@vue/shared": "3.5.39",
+    "@vue/compiler-core": "3.5.43",
+    "@vue/compiler-dom": "3.5.43",
+    "@vue/compiler-ssr": "3.5.43",
+    "@vue/server-renderer": "3.5.43",
+    "@vue/shared": "3.5.43",
     "entities": "7.0.1",
     "estree-walker": "2.0.2",
     "source-map-js": "1.2.1"
