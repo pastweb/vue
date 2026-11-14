@@ -194,22 +194,6 @@
       "import": "./dist/AsyncComponent/utils.js",
       "require": "./dist/AsyncComponent/utils.cjs"
     },
-    "./Remote": {
-      "import": "./dist/Remote/index.js",
-      "require": "./dist/Remote/index.cjs"
-    },
-    "./Remote/Remote": {
-      "import": "./dist/Remote/Remote.js",
-      "require": "./dist/Remote/Remote.cjs"
-    },
-    "./Remote/Remote.vue_vue_type_script_lang": {
-      "import": "./dist/Remote/Remote.vue_vue_type_script_lang.js",
-      "require": "./dist/Remote/Remote.vue_vue_type_script_lang.cjs"
-    },
-    "./Remote/types": {
-      "import": "./dist/Remote/types.js",
-      "require": "./dist/Remote/types.cjs"
-    },
     "./computed": {
       "import": "./dist/computed/index.js",
       "require": "./dist/computed/index.cjs"
@@ -382,6 +366,14 @@
       "import": "./dist/getContext/getContext.js",
       "require": "./dist/getContext/getContext.cjs"
     },
+    "./invokeEventHandlers": {
+      "import": "./dist/invokeEventHandlers/index.js",
+      "require": "./dist/invokeEventHandlers/index.cjs"
+    },
+    "./invokeEventHandlers/invokeEventHandlers": {
+      "import": "./dist/invokeEventHandlers/invokeEventHandlers.js",
+      "require": "./dist/invokeEventHandlers/invokeEventHandlers.cjs"
+    },
     "./Island": {
       "import": "./dist/Island/index.js",
       "require": "./dist/Island/index.cjs"
@@ -453,6 +445,22 @@
     "./portals/usePortals": {
       "import": "./dist/portals/usePortals.js",
       "require": "./dist/portals/usePortals.cjs"
+    },
+    "./Remote": {
+      "import": "./dist/Remote/index.js",
+      "require": "./dist/Remote/index.cjs"
+    },
+    "./Remote/Remote": {
+      "import": "./dist/Remote/Remote.js",
+      "require": "./dist/Remote/Remote.cjs"
+    },
+    "./Remote/Remote.vue_vue_type_script_lang": {
+      "import": "./dist/Remote/Remote.vue_vue_type_script_lang.js",
+      "require": "./dist/Remote/Remote.vue_vue_type_script_lang.cjs"
+    },
+    "./Remote/types": {
+      "import": "./dist/Remote/types.js",
+      "require": "./dist/Remote/types.cjs"
     },
     "./Render": {
       "import": "./dist/Render/index.js",
@@ -622,6 +630,10 @@
       "import": "./dist/useColorScheme/index.js",
       "require": "./dist/useColorScheme/index.cjs"
     },
+    "./useColorScheme/reuseColorScheme": {
+      "import": "./dist/useColorScheme/reuseColorScheme.js",
+      "require": "./dist/useColorScheme/reuseColorScheme.cjs"
+    },
     "./useColorScheme/useColorScheme": {
       "import": "./dist/useColorScheme/useColorScheme.js",
       "require": "./dist/useColorScheme/useColorScheme.cjs"
@@ -674,6 +686,22 @@
       "import": "./dist/useRef/useRef.js",
       "require": "./dist/useRef/useRef.cjs"
     },
+    "./windowManager": {
+      "import": "./dist/windowManager/index.js",
+      "require": "./dist/windowManager/index.cjs"
+    },
+    "./windowManager/installWindowManager": {
+      "import": "./dist/windowManager/installWindowManager.js",
+      "require": "./dist/windowManager/installWindowManager.cjs"
+    },
+    "./windowManager/types": {
+      "import": "./dist/windowManager/types.js",
+      "require": "./dist/windowManager/types.cjs"
+    },
+    "./windowManager/useWindowManager": {
+      "import": "./dist/windowManager/useWindowManager.js",
+      "require": "./dist/windowManager/useWindowManager.cjs"
+    },
     "./withDefaultProps": {
       "import": "./dist/withDefaultProps/index.js",
       "require": "./dist/withDefaultProps/index.cjs"
@@ -691,16 +719,5 @@
       "require": "./dist/withDefaultProps/withDefaultProps.cjs"
     },
     "./*": "./*"
-  },
-  "inlinedDependencies": {
-    "@babel/parser": "7.29.7",
-    "@vue/compiler-core": "3.5.43",
-    "@vue/compiler-dom": "3.5.43",
-    "@vue/compiler-ssr": "3.5.43",
-    "@vue/server-renderer": "3.5.43",
-    "@vue/shared": "3.5.43",
-    "entities": "7.0.1",
-    "estree-walker": "2.0.2",
-    "source-map-js": "1.2.1"
   }
 }
