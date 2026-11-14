@@ -34,6 +34,25 @@ function writeJson(file, value) {
   writeFileSync(file, `${JSON.stringify(value, null, 2)}\n`);
 }
 
+function ensurePnpmReleasePolicy(packageJson) {
+  const toolsSpecifier = packageJson.devDependencies?.['@pastweb/tools'];
+  const toolsVersion = toolsSpecifier?.match(/\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?/)?.[0];
+
+  if (!toolsVersion) return;
+
+  const workspaceFile = 'pnpm-workspace.yaml';
+  const entry = `  - '@pastweb/tools@${toolsVersion}'`;
+  let content = existsSync(workspaceFile) ? readFileSync(workspaceFile, 'utf8') : '';
+
+  if (!content.includes('minimumReleaseAgeExclude:')) {
+    content = `${content.trimEnd()}\nminimumReleaseAgeExclude:\n${entry}\n`;
+  } else if (!content.includes(`@pastweb/tools@${toolsVersion}`)) {
+    content = `${content.trimEnd()}\n${entry}\n`;
+  }
+
+  writeFileSync(workspaceFile, content);
+}
+
 function updatePackageVersion(version) {
   const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
   packageJson.version = version;
@@ -52,7 +71,10 @@ function updatePackageVersion(version) {
 }
 
 const rl = createInterface({ input, output });
-const currentVersion = JSON.parse(readFileSync('package.json', 'utf8')).version;
+const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
+ensurePnpmReleasePolicy(packageJson);
+
+const currentVersion = packageJson.version;
 const rawVersion = await rl.question(`Release version (current ${currentVersion}): `);
 rl.close();
 
