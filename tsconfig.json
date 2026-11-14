@@ -14,7 +14,11 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "verbatimModuleSyntax": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "@pastweb/tools": ["../tools/src/index.ts"],
+      "@pastweb/tools/*": ["../tools/src/*"]
+    },
   },
   "include": ["src"]
 }
