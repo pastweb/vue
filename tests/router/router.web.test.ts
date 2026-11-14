@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createViewRouter } from '@pastweb/tools/createViewRouter/createViewRouter';
 import type { Route } from '@pastweb/tools/createViewRouter/types';
 import {
-  createRouter,
+  installRouter,
   RouterView,
   useLocation,
   useNavigate,
@@ -85,7 +85,7 @@ describe('router', () => {
 
     const wrapper = mount(Probe, {
       global: {
-        plugins: [createRouter(router)],
+        plugins: [installRouter(router)],
       },
     });
 
@@ -125,7 +125,7 @@ describe('router', () => {
 
     const wrapper = mount(Probe, {
       global: {
-        plugins: [createRouter(router)],
+        plugins: [installRouter(router)],
       },
     });
 
@@ -167,7 +167,7 @@ describe('router', () => {
 
     const wrapper = mount(RouterView, {
       global: {
-        plugins: [createRouter(router)],
+        plugins: [installRouter(router)],
       },
     });
 

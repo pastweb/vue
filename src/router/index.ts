@@ -1,5 +1,6 @@
+export { RouterLink } from './RouterLink';
 export { RouterView } from './RouterView';
-export { installRouter, installRouter as createRouter } from './installRouter';
+export { installRouter } from './installRouter';
 export { useLocation } from './useLocation';
 export { useNavigate } from './useNavigate';
 export { useRoute } from './useRoute';
@@ -8,7 +9,7 @@ export { usePaths } from './usePaths';
 export { useRouterLink } from './useRouterLink';
 export { useSearchParams } from './useSearchParams';
 
-export type { RouterLink, RouterLinkOptions } from './useRouterLink';
+export type { RouterLinkOptions } from './useRouterLink';
 export type {
   Route,
   ViewComponent,

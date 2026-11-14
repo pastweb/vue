@@ -1,2 +1,2 @@
 export { useRouterLink } from './useRouterLink';
-export type { RouterLink, RouterLinkOptions } from './types';
+export type { RouterLinkOptions } from './types';
