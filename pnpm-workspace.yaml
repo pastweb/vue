@@ -2,3 +2,4 @@ allowBuilds:
   esbuild: true
 minimumReleaseAgeExclude:
   - '@pastweb/tools@2.7.0'
+  - '@pastweb/tools@2.7.1'
