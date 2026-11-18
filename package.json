@@ -1,6 +1,6 @@
 {
   "name": "@pastweb/vue",
-  "version": "2.7.1",
+  "version": "2.9.0",
   "description": "Vue bindings for Pastweb: composables and components for routing, portals, API query hooks, SSR entries, islands, Pinia stores, and reactive state.",
   "keywords": [
     "api-query",
@@ -56,7 +56,7 @@
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
-    "@pastweb/tools": "^2.7.1",
+    "@pastweb/tools": "^2.9.0",
     "@vue/server-renderer": "^3.5.43",
     "pinia": "^3.0.4",
     "vue": "^3.5.43"
@@ -67,7 +67,7 @@
     }
   },
   "devDependencies": {
-    "@pastweb/tools": "^2.7.1",
+    "@pastweb/tools": "^2.9.0",
     "@types/node": "^22.15.17",
     "@vitejs/plugin-vue": "^5.2.4",
     "@vue/server-renderer": "^3.5.43",
