@@ -1,6 +1,6 @@
 {
   "name": "@pastweb/vue",
-  "version": "2.9.0",
+  "version": "2.9.1",
   "description": "Vue bindings for Pastweb: composables and components for routing, portals, API query hooks, SSR entries, islands, Pinia stores, and reactive state.",
   "keywords": [
     "api-query",
@@ -56,7 +56,7 @@
     "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
-    "@pastweb/tools": "^2.9.0",
+    "@pastweb/tools": "^2.9.1",
     "@vue/server-renderer": "^3.5.43",
     "pinia": "^3.0.4",
     "vue": "^3.5.43"
@@ -67,7 +67,7 @@
     }
   },
   "devDependencies": {
-    "@pastweb/tools": "^2.9.0",
+    "@pastweb/tools": "^2.9.1",
     "@types/node": "^22.15.17",
     "@vitejs/plugin-vue": "^5.2.4",
     "@vue/server-renderer": "^3.5.43",
@@ -76,7 +76,7 @@
     "happy-dom": "^20.10.6",
     "pinia": "^3.0.4",
     "rollup-plugin-preserve-directives": "^0.4.0",
-    "tsdown": "^0.22.3",
+    "tsdown": "^0.23.7",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3",
     "unrun": "^0.3.1",
@@ -174,13 +174,13 @@
       "import": "./dist/AsyncComponent/index.js",
       "require": "./dist/AsyncComponent/index.cjs"
     },
-    "./AsyncComponent/AsyncComponent": {
-      "import": "./dist/AsyncComponent/AsyncComponent.js",
-      "require": "./dist/AsyncComponent/AsyncComponent.cjs"
+    "./AsyncComponent/AsyncComponent.vue": {
+      "import": "./dist/AsyncComponent/AsyncComponent.vue.js",
+      "require": "./dist/AsyncComponent/AsyncComponent.vue.cjs"
     },
-    "./AsyncComponent/AsyncComponent.vue_vue_type_script_lang": {
-      "import": "./dist/AsyncComponent/AsyncComponent.vue_vue_type_script_lang.js",
-      "require": "./dist/AsyncComponent/AsyncComponent.vue_vue_type_script_lang.cjs"
+    "./AsyncComponent/AsyncComponent2.vue": {
+      "import": "./dist/AsyncComponent/AsyncComponent2.vue.js",
+      "require": "./dist/AsyncComponent/AsyncComponent2.vue.cjs"
     },
     "./AsyncComponent/constants": {
       "import": "./dist/AsyncComponent/constants.js",
@@ -226,13 +226,13 @@
       "import": "./dist/createEntry/UpdateEntry/types.js",
       "require": "./dist/createEntry/UpdateEntry/types.cjs"
     },
-    "./createEntry/UpdateEntry/UpdateEntry": {
-      "import": "./dist/createEntry/UpdateEntry/UpdateEntry.js",
-      "require": "./dist/createEntry/UpdateEntry/UpdateEntry.cjs"
+    "./createEntry/UpdateEntry/UpdateEntry.vue": {
+      "import": "./dist/createEntry/UpdateEntry/UpdateEntry.vue.js",
+      "require": "./dist/createEntry/UpdateEntry/UpdateEntry.vue.cjs"
     },
-    "./createEntry/UpdateEntry/UpdateEntry.vue_vue_type_script_setup_true_lang": {
-      "import": "./dist/createEntry/UpdateEntry/UpdateEntry.vue_vue_type_script_setup_true_lang.js",
-      "require": "./dist/createEntry/UpdateEntry/UpdateEntry.vue_vue_type_script_setup_true_lang.cjs"
+    "./createEntry/UpdateEntry/UpdateEntry2.vue": {
+      "import": "./dist/createEntry/UpdateEntry/UpdateEntry2.vue.js",
+      "require": "./dist/createEntry/UpdateEntry/UpdateEntry2.vue.cjs"
     },
     "./createEntry/UpdateEntry/Vnode": {
       "import": "./dist/createEntry/UpdateEntry/Vnode.js",
@@ -286,13 +286,13 @@
       "import": "./dist/createEntry/WaitFor/types.js",
       "require": "./dist/createEntry/WaitFor/types.cjs"
     },
-    "./createEntry/WaitFor/WaitFor": {
-      "import": "./dist/createEntry/WaitFor/WaitFor.js",
-      "require": "./dist/createEntry/WaitFor/WaitFor.cjs"
+    "./createEntry/WaitFor/WaitFor.vue": {
+      "import": "./dist/createEntry/WaitFor/WaitFor.vue.js",
+      "require": "./dist/createEntry/WaitFor/WaitFor.vue.cjs"
     },
-    "./createEntry/WaitFor/WaitFor.vue_vue_type_script_setup_true_lang": {
-      "import": "./dist/createEntry/WaitFor/WaitFor.vue_vue_type_script_setup_true_lang.js",
-      "require": "./dist/createEntry/WaitFor/WaitFor.vue_vue_type_script_setup_true_lang.cjs"
+    "./createEntry/WaitFor/WaitFor2.vue": {
+      "import": "./dist/createEntry/WaitFor/WaitFor2.vue.js",
+      "require": "./dist/createEntry/WaitFor/WaitFor2.vue.cjs"
     },
     "./createMicroStore": {
       "import": "./dist/createMicroStore/index.js",
@@ -342,13 +342,13 @@
       "import": "./dist/EntryAdapter/constants.js",
       "require": "./dist/EntryAdapter/constants.cjs"
     },
-    "./EntryAdapter/EntryAdapter": {
-      "import": "./dist/EntryAdapter/EntryAdapter.js",
-      "require": "./dist/EntryAdapter/EntryAdapter.cjs"
+    "./EntryAdapter/EntryAdapter.vue": {
+      "import": "./dist/EntryAdapter/EntryAdapter.vue.js",
+      "require": "./dist/EntryAdapter/EntryAdapter.vue.cjs"
     },
-    "./EntryAdapter/EntryAdapter.vue_vue_type_script_lang": {
-      "import": "./dist/EntryAdapter/EntryAdapter.vue_vue_type_script_lang.js",
-      "require": "./dist/EntryAdapter/EntryAdapter.vue_vue_type_script_lang.cjs"
+    "./EntryAdapter/EntryAdapter2.vue": {
+      "import": "./dist/EntryAdapter/EntryAdapter2.vue.js",
+      "require": "./dist/EntryAdapter/EntryAdapter2.vue.cjs"
     },
     "./EntryAdapter/types": {
       "import": "./dist/EntryAdapter/types.js",
@@ -382,13 +382,13 @@
       "import": "./dist/Island/constants.js",
       "require": "./dist/Island/constants.cjs"
     },
-    "./Island/Island": {
-      "import": "./dist/Island/Island.js",
-      "require": "./dist/Island/Island.cjs"
+    "./Island/Island.vue": {
+      "import": "./dist/Island/Island.vue.js",
+      "require": "./dist/Island/Island.vue.cjs"
     },
-    "./Island/Island.vue_vue_type_script_setup_true_lang": {
-      "import": "./dist/Island/Island.vue_vue_type_script_setup_true_lang.js",
-      "require": "./dist/Island/Island.vue_vue_type_script_setup_true_lang.cjs"
+    "./Island/Island2.vue": {
+      "import": "./dist/Island/Island2.vue.js",
+      "require": "./dist/Island/Island2.vue.cjs"
     },
     "./Island/types": {
       "import": "./dist/Island/types.js",
@@ -418,13 +418,13 @@
       "import": "./dist/portals/Portal/index.js",
       "require": "./dist/portals/Portal/index.cjs"
     },
-    "./portals/Portal/Portal": {
-      "import": "./dist/portals/Portal/Portal.js",
-      "require": "./dist/portals/Portal/Portal.cjs"
+    "./portals/Portal/Portal.vue": {
+      "import": "./dist/portals/Portal/Portal.vue.js",
+      "require": "./dist/portals/Portal/Portal.vue.cjs"
     },
-    "./portals/Portal/Portal.vue_vue_type_script_setup_true_lang": {
-      "import": "./dist/portals/Portal/Portal.vue_vue_type_script_setup_true_lang.js",
-      "require": "./dist/portals/Portal/Portal.vue_vue_type_script_setup_true_lang.cjs"
+    "./portals/Portal/Portal2.vue": {
+      "import": "./dist/portals/Portal/Portal2.vue.js",
+      "require": "./dist/portals/Portal/Portal2.vue.cjs"
     },
     "./portals/Portal/types": {
       "import": "./dist/portals/Portal/types.js",
@@ -450,13 +450,13 @@
       "import": "./dist/Remote/index.js",
       "require": "./dist/Remote/index.cjs"
     },
-    "./Remote/Remote": {
-      "import": "./dist/Remote/Remote.js",
-      "require": "./dist/Remote/Remote.cjs"
+    "./Remote/Remote.vue": {
+      "import": "./dist/Remote/Remote.vue.js",
+      "require": "./dist/Remote/Remote.vue.cjs"
     },
-    "./Remote/Remote.vue_vue_type_script_lang": {
-      "import": "./dist/Remote/Remote.vue_vue_type_script_lang.js",
-      "require": "./dist/Remote/Remote.vue_vue_type_script_lang.cjs"
+    "./Remote/Remote2.vue": {
+      "import": "./dist/Remote/Remote2.vue.js",
+      "require": "./dist/Remote/Remote2.vue.cjs"
     },
     "./Remote/types": {
       "import": "./dist/Remote/types.js",
@@ -466,13 +466,13 @@
       "import": "./dist/Render/index.js",
       "require": "./dist/Render/index.cjs"
     },
-    "./Render/Render": {
-      "import": "./dist/Render/Render.js",
-      "require": "./dist/Render/Render.cjs"
+    "./Render/Render.vue": {
+      "import": "./dist/Render/Render.vue.js",
+      "require": "./dist/Render/Render.vue.cjs"
     },
-    "./Render/Render.vue_vue_type_script_lang": {
-      "import": "./dist/Render/Render.vue_vue_type_script_lang.js",
-      "require": "./dist/Render/Render.vue_vue_type_script_lang.cjs"
+    "./Render/Render2.vue": {
+      "import": "./dist/Render/Render2.vue.js",
+      "require": "./dist/Render/Render2.vue.cjs"
     },
     "./Render/types": {
       "import": "./dist/Render/types.js",
@@ -490,13 +490,13 @@
       "import": "./dist/router/RouterLink/index.js",
       "require": "./dist/router/RouterLink/index.cjs"
     },
-    "./router/RouterLink/RouterLink": {
-      "import": "./dist/router/RouterLink/RouterLink.js",
-      "require": "./dist/router/RouterLink/RouterLink.cjs"
+    "./router/RouterLink/RouterLink.vue": {
+      "import": "./dist/router/RouterLink/RouterLink.vue.js",
+      "require": "./dist/router/RouterLink/RouterLink.vue.cjs"
     },
-    "./router/RouterLink/RouterLink.vue_vue_type_script_setup_true_lang": {
-      "import": "./dist/router/RouterLink/RouterLink.vue_vue_type_script_setup_true_lang.js",
-      "require": "./dist/router/RouterLink/RouterLink.vue_vue_type_script_setup_true_lang.cjs"
+    "./router/RouterLink/RouterLink2.vue": {
+      "import": "./dist/router/RouterLink/RouterLink2.vue.js",
+      "require": "./dist/router/RouterLink/RouterLink2.vue.cjs"
     },
     "./router/RouterLink/types": {
       "import": "./dist/router/RouterLink/types.js",
@@ -506,13 +506,13 @@
       "import": "./dist/router/RouterView/index.js",
       "require": "./dist/router/RouterView/index.cjs"
     },
-    "./router/RouterView/RouterView": {
-      "import": "./dist/router/RouterView/RouterView.js",
-      "require": "./dist/router/RouterView/RouterView.cjs"
+    "./router/RouterView/RouterView.vue": {
+      "import": "./dist/router/RouterView/RouterView.vue.js",
+      "require": "./dist/router/RouterView/RouterView.vue.cjs"
     },
-    "./router/RouterView/RouterView.vue_vue_type_script_setup_true_lang": {
-      "import": "./dist/router/RouterView/RouterView.vue_vue_type_script_setup_true_lang.js",
-      "require": "./dist/router/RouterView/RouterView.vue_vue_type_script_setup_true_lang.cjs"
+    "./router/RouterView/RouterView2.vue": {
+      "import": "./dist/router/RouterView/RouterView2.vue.js",
+      "require": "./dist/router/RouterView/RouterView2.vue.cjs"
     },
     "./router/RouterView/types": {
       "import": "./dist/router/RouterView/types.js",
